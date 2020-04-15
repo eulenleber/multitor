@@ -35,12 +35,12 @@ function CreateProxyProcess() {
       _bk_port_new="$_bk_port"
 
       # shellcheck disable=SC2154
-      printf "  server            socks-process-%d 127.0.0.1:%d check fall 3 rise 2\\n" "$_bk_port" "$_bk_port_new" \
+      printf "  server            socks-process-%d %s:%d check fall 3 rise 2\\n" "$_bk_port" "$bind_address" "$_bk_port_new" \
       >>"${_tml_ha1}"
 
       _logger "info" \
         "${_FUNCTION_ID}()" \
-        "added backend port (haproxy): '$_bk_port'"
+        "added backend port (haproxy): '$bind_address:$_bk_port'"
 
     else
 
@@ -48,17 +48,16 @@ function CreateProxyProcess() {
       _bk_port_new=$((_bk_port_tmp - 1000))
 
       # shellcheck disable=SC2154
-      printf "  server            %s-process-%d 127.0.0.1:%d check fall 3 rise 2\\n" "$proxy_type" "$_bk_port_new" "$_bk_port_new" \
+      printf "  server            %s-process-%d %s:%d check fall 3 rise 2\\n" "$proxy_type" "$_bk_port_new" "$bind_address" "$_bk_port_new" \
       >>"${_tml_ha1}"
 
       _logger "info" \
         "${_FUNCTION_ID}()" \
-        "added backend port (haproxy): '$_bk_port_new'"
+        "added backend port (haproxy): '$bind_address:$_bk_port_new'"
 
       CreateWebProxyProcess
 
       _bk_port_tmp=$((_bk_port_tmp + 1))
-
     fi
 
   done

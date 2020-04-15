@@ -32,11 +32,33 @@ function CreateTorProcess() {
   local _tport_state=0
 
   # We create a directory for the new tor process.
-  CreateTorDirectory
+ CreateTorDirectory
+ 
+  # We enable DNS for the first tor node via its the configuration file.
+  # shellcheck disable=SC2154
+    if [[ "$i" == 0 ]]
+    then
+        echo "DNSPort $bind_address:53" >> "${_torrc_config}"
+      _kstate="$?"
+
+      if [[ $_kstate -eq 0 ]] ; then
+
+        _logger "info" \
+          "${_FUNCTION_ID}()" \
+          "saved DNSPort correctly"
+
+      else
+
+        _logger "stop" \
+          "${_FUNCTION_ID}()" \
+          "not saved DNSPort correctly"
+
+      fi
+    fi
 
   # We save the hash of the password to the configuration file.
   # shellcheck disable=SC2154
-  echo "HashedControlPassword ${_pass_hash}" > "${_torrc_config}"
+  echo "HashedControlPassword ${_pass_hash}" >> "${_torrc_config}"
   _kstate="$?"
 
   if [[ $_kstate -eq 0 ]] ; then
@@ -73,14 +95,16 @@ function CreateTorProcess() {
   fi
 
   # shellcheck disable=SC2024
-  sudo -u "$_arg_uname" tor -f "${_torrc_config}" \
+  #sudo -u "$_arg_uname" tor -f "${_torrc_config}" \
+       #--SocksBindAddress 127.0.0.1 \
+       #--AllowSingleHopCircuits 1 \
+  tor --user "$_arg_uname" -f "${_torrc_config}" \
        --RunAsDaemon 1 \
        --CookieAuthentication 0 \
-       --SocksPort "$_arg_socks" \
+       --SocksPort "${bind_address}:$_arg_socks" \
        --ControlPort "$_arg_control" \
        --PidFile "${_proc_dir}/${_arg_socks}.pid" \
        --DataDirectory "${_proc_dir}" \
-       --SocksBindAddress 127.0.0.1 \
        --NewCircuitPeriod 15 \
        --MaxCircuitDirtiness 15 \
        --NumEntryGuards 8 \
@@ -89,7 +113,6 @@ function CreateTorProcess() {
        --RefuseUnknownExits 0 \
        --ClientOnly 1 \
        --StrictNodes 1 \
-       --AllowSingleHopCircuits 1 \
        >>"$_log_stdout" 2>&1 ; _kstate="$?"
 
   if [[ $_kstate -eq 0 ]] ; then

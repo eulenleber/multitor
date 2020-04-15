@@ -37,20 +37,21 @@ function CreateWebProxyProcess() {
         _pfd="${_tml_po1}.${_bk_port_new}"
 
         # shellcheck disable=SC2154
-        cp "${_tml_po0}" "${_pfd}"
+        #cp "${_tml_po0}" "${_pfd}"
+        sed "s/__BIND_ADDRESS/$bind_address/g" "${_tml_po0}" > "${_pfd}"
 
         printf "proxyPort = %d\\n" "$_bk_port_new" \
         >>"${_pfd}"
 
         # shellcheck disable=SC2154
-        printf "socksParentProxy = \"127.0.0.1:%d\"\\n" "$_bk_port" \
+        printf "socksParentProxy = \"%s:%d\"\\n" "$bind_address" "$_bk_port" \
         >>"${_pfd}"
 
         _proxy_http_state=1
 
         _logger "info" \
           "${_FUNCTION_ID}()" \
-          "added backend port (polipo): '$_bk_port'"
+          "added backend port (polipo): '$bind_address:$_bk_port'"
 
         polipo -c "${_pfd}"
 
@@ -58,9 +59,9 @@ function CreateWebProxyProcess() {
 
         # shellcheck disable=SC2154
         _pfd="${_tml_po1}.${_bk_port_new}"
-
         # shellcheck disable=SC2154
-        cp "${_tml_po0}" "${_pfd}"
+        #cp "${_tml_po0}" "${_pfd}"
+        sed "s/__BIND_ADDRESS/$bind_address/g" "${_tml_po0}" > "${_pfd}"
 
         # https://github.com/trimstray/multitor/issues/15
         # shellcheck disable=SC2154,SC2129
@@ -68,11 +69,11 @@ function CreateWebProxyProcess() {
         # >>"${_pfd}"
 
         # shellcheck disable=SC2154,SC2129
-        printf "listen-address 127.0.0.1:%d\\n" "$_bk_port_new" \
+        printf "listen-address %s:%d\\n" "$bind_address" "$_bk_port_new" \
         >>"${_pfd}"
 
         # shellcheck disable=SC2154,SC2129
-        printf "forward-socks5t / 127.0.0.1:%d .\\n" "$_bk_port" \
+        printf "forward-socks5t / %s:%d .\\n" "$bind_address" "$_bk_port" \
         >>"${_pfd}"
 
         # shellcheck disable=SC2034
@@ -80,7 +81,7 @@ function CreateWebProxyProcess() {
 
         _logger "info" \
           "${_FUNCTION_ID}()" \
-          "added backend port (privoxy): '$_bk_port'"
+          "added backend port (privoxy): '$bind_address:$_bk_port'"
 
         privoxy "${_pfd}"
 
@@ -91,9 +92,9 @@ function CreateWebProxyProcess() {
 
         _logger "info" \
           "${_FUNCTION_ID}()" \
-          "added backend port (hpts): '$_bk_port'"
+          "added backend port (hpts): '$bind_address:$_bk_port'"
 
-        hpts -s 127.0.0.1:"${_bk_port}" -p "${_bk_port_new}" >/dev/null 2>&1 &
+        hpts -s ${bind_address}:"${_bk_port}" -p "${_bk_port_new}" >/dev/null 2>&1 &
 
       fi
 
@@ -113,20 +114,21 @@ function CreateWebProxyProcess() {
         _pfd="${_tml_po1}"
 
         # shellcheck disable=SC2154
-        cp "${_tml_po0}" "${_pfd}"
+        #cp "${_tml_po0}" "${_pfd}"
+        sed "s/__BIND_ADDRESS/$bind_address/g" "${_tml_po0}" > "${_pfd}"
 
         printf "proxyPort = %d\\n" "$_bk_port_new" \
         >>"${_pfd}"
 
         # shellcheck disable=SC2154
-        printf "socksParentProxy = \"127.0.0.1:%d\"\\n" "$_bk_port" \
+        printf "socksParentProxy = \"%s:%d\"\\n" "$bind_address" "$_bk_port" \
         >>"${_pfd}"
 
         _proxy_http_state=1
 
         _logger "info" \
           "${_FUNCTION_ID}()" \
-          "added backend port (polipo): '$_bk_port'"
+          "added backend port (polipo): '$bind_address:$_bk_port'"
 
         polipo -c "${_pfd}"
 
@@ -137,7 +139,8 @@ function CreateWebProxyProcess() {
         _pfd="${_tml_po1}"
 
         # shellcheck disable=SC2154
-        cp "${_tml_po0}" "${_pfd}"
+        #cp "${_tml_po0}" "${_pfd}"
+        sed "s/__BIND_ADDRESS/$bind_address/g" "${_tml_po0}" > "${_pfd}"
 
         # https://github.com/trimstray/multitor/issues/15
         # shellcheck disable=SC2154,SC2129
@@ -145,11 +148,11 @@ function CreateWebProxyProcess() {
         # >>"${_pfd}"
 
         # shellcheck disable=SC2154,SC2129
-        printf "listen-address 127.0.0.1:%d\\n" "$_bk_port_new" \
+        printf "listen-address %s:%d\\n" "$bind_address" "$_bk_port_new" \
         >>"${_pfd}"
 
         # shellcheck disable=SC2154,SC2129
-        printf "forward-socks5t / 127.0.0.1:%d .\\n" "$_bk_port" \
+        printf "forward-socks5t / %s:%d .\\n" "$bind_address" "$_bk_port" \
         >>"${_pfd}"
 
         # shellcheck disable=SC2034
@@ -157,7 +160,7 @@ function CreateWebProxyProcess() {
 
         _logger "info" \
           "${_FUNCTION_ID}()" \
-          "added backend port (privoxy): '$_bk_port'"
+          "added backend port (privoxy): '$bind_address:$_bk_port'"
 
         privoxy "${_pfd}"
 
@@ -168,9 +171,9 @@ function CreateWebProxyProcess() {
 
         _logger "info" \
           "${_FUNCTION_ID}()" \
-          "added backend port (hpts): '$_bk_port'"
+          "added backend port (hpts): '$bind_address:$_bk_port'"
 
-        hpts -s 127.0.0.1:"${_bk_port}" -p "${_bk_port_new}" >/dev/null 2>&1 &
+        hpts -s ${bind_address}:"${_bk_port}" -p "${_bk_port_new}" >/dev/null 2>&1 &
 
       fi
 

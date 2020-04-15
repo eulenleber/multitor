@@ -24,7 +24,8 @@ function CheckConn() {
   local _port="$1"
 
   # shellcheck disable=SC2154
-  timeout 1 bash -c "</dev/tcp/127.0.0.1/${_port}" >>"$_log_stdout" 2>&1
+  #timeout 1 bash -c "</dev/tcp/127.0.0.1/${_port}" >>"$_log_stdout" 2>&1
+  timeout 1 bash -c "</dev/tcp/${bind_address}/${_port}" >>"$_log_stdout" 2>&1
 
   _STATE="$?"
 

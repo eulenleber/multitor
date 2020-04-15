@@ -109,12 +109,11 @@ function __main__() {
 
   # Specifies the call parameters of the script, the exact description
   # can be found in _help_ and file README.md.
-  local _short_opt="i:ksnu:"
-  local _long_opt="help,debug,verbose,init:,kill,show-id,new-id,user:,socks-port:,control-port:,proxy:,haproxy"
+  local _short_opt="hi:ksnb:u:"
+  local _long_opt="help,debug,verbose,init:,kill,show-id,new-id,user:,socks-port:,control-port:,proxy:,bind:,haproxy"
 
   _GETOPT_PARAMS=$(getopt -o "${_short_opt}" --long "${_long_opt}" \
                    -n "${_init_name}" -- "${__script_params[@]}")
-
   # With this structure, in the case of problems with the parameters placed
   # in the _GETOPT_PARAMS variable we finish the script. Keep this in mind
   # because it has some consequences - the __main __() function will not be
@@ -131,10 +130,9 @@ function __main__() {
 
   eval set -- "$_GETOPT_PARAMS"
   while true ; do
-
     case $1 in
 
-      --help)
+      -h|--help)
 
         _help_
 
@@ -157,6 +155,14 @@ function __main__() {
         export init_state="1"
 
         export init_number="${2}"
+
+        shift 2 ;;
+
+      -b|--bind)
+
+        export bind_state="1"
+
+        export bind_address="${2}"
 
         shift 2 ;;
 
@@ -218,7 +224,7 @@ function __main__() {
 
         export frontend_type="haproxy"
 
-        shift 2 ;;
+        shift 1 ;;
 
       *)
 
@@ -431,6 +437,7 @@ function __main__() {
 
     local _opt_values=("init_state" "init_number" \
                        "user_state" "user_name" \
+                       "bind_state" "bind_address" \
                        "socks_port_state" "socks_port_number" \
                        "control_port_state" "control_port_number")
 
@@ -551,7 +558,8 @@ function __main__() {
       # Updated auth for HAProxy template configuration file.
 
       # shellcheck disable=SC2154
-      cp "${_tml_ha0}" "${_tml_ha1}"
+      #cp "${_tml_ha0}" "${_tml_ha1}"
+      sed "s/__BIND_ADDRESS__/$bind_address/g" "${_tml_ha0}" > "${_tml_ha1}"
 
       # shellcheck disable=SC2034
       _pass_gen_ha=$(< /dev/urandom tr -dc 'a-zA-Z0-9' | fold -w 18 | head -n 1)
@@ -573,7 +581,7 @@ function __main__() {
 
       _logger "info" \
         "${_FUNCTION_ID}()" \
-        "socks_port_number: '$socks_port_number', control_port_number: '$control_port_number'"
+        "bind_address: '$bind_address'. socks_port_number: '$socks_port_number', control_port_number: '$control_port_number'"
 
       CreateTorProcess "${user_name}" "${socks_port_number}" "${control_port_number}"
 
@@ -583,7 +591,6 @@ function __main__() {
       # In this case, we can search for a specific identifier (${socks_port_number}).
       # shellcheck disable=SC2009
       _tproc=$(ps -ax | grep "multitor" | grep ".pid" | grep -v "grep" | grep "$socks_port_number")
-
       # We get process information and display it on the screen.
       GetTorProcess
 
@@ -784,12 +791,12 @@ function __main__() {
       if [[ "$socks_port_number" == "all" ]] ; then
 
         for _tpr in "${_tor_processes[@]}" ; do
-
           # In this case, we can search for a specific identifier (${_tpr}).
           # shellcheck disable=SC2009
           _tproc=$(ps -ax | grep "multitor" | grep ".pid" | grep -v "grep" | grep "$_tpr")
 
-          IFS=" " read -r -a _proc_socks_num_tmp <<< "$(echo "$_tproc" | awk '{print $13}')"
+          #IFS=" " read -r -a _proc_socks_num_tmp <<< "$(echo "$_tproc" | awk '{print $13}')"
+          IFS=" " read -r -a _proc_socks_num_tmp <<< "$(echo "$_tproc" | awk '{print $15}')"
 
           _proc_socks_num+=("${_proc_socks_num_tmp[@]}")
 
@@ -950,7 +957,7 @@ function __main__() {
 
           # shellcheck disable=SC2154
           _newnym=$(printf "AUTHENTICATE \"%s\"\\r\\nSIGNAL NEWNYM\\nQUIT\\n" "${_pass_in}" \
-          | nc 127.0.0.1 "$_tor_proc_control")
+          | nc ${bind_address} "$_tor_proc_control")
 
           if echo "$_newnym" | grep -qi "250 closing connection" ; then
 

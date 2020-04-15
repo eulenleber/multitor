@@ -571,7 +571,7 @@ function _help_() {
     $_init_name --show-id --socks-port 9000
 
   Options:
-        --help                        show this message
+    -h  --help                        show this message
         --debug                       displays information on the screen (debug mode)
         --verbose                     displays more information about TOR processes
     -i, --init <num>                  init new tor processes
@@ -579,6 +579,7 @@ function _help_() {
     -s, --show-id                     show specific tor process id
     -n, --new-id                      regenerate tor circuit
     -u, --user <string>               set the user (only with -i|--init)
+    -b, --bind <string>               set the bind address
         --socks-port <port_num|all>   set socks port number
         --control-port <port_num>     set control port number
         --proxy <proxy_type>          set socks or http (polipo, privoxy, hpts) proxy server

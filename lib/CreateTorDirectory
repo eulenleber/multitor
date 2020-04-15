@@ -30,7 +30,25 @@ function CreateTorDirectory() {
       "created tor process directory: ${_proc_dir}"
 
     # shellcheck disable=SC2154
-    chown "${_arg_uname}" "${_proc_dir}" >>"$_log_stdout" 2>&1
+    cp ../templates/torrc-template.cfg "$_proc_dir/${_arg_socks}.torrc" >>"$_log_stdout" 2>&1
+    _kstate="$?"
+
+    if [[ $_kstate -eq 0 ]] ; then
+      
+      _logger "info" \
+        "${_FUNCTION_ID}()" \
+        "copied torrc template into: '${_proc_dir}/${_arg_socks}.torrc'"
+
+    else
+
+      _logger "stop" \
+        "${_FUNCTION_ID}()" \
+        "the torrc template could not be copied"
+
+    fi
+
+    # shellcheck disable=SC2154
+    chown -R "${_arg_uname}" "${_proc_dir}" >>"$_log_stdout" 2>&1
     _kstate="$?"
 
     if [[ $_kstate -eq 0 ]] ; then
@@ -46,6 +64,7 @@ function CreateTorDirectory() {
         "the owner could not be changed"
 
     fi
+
 
   else
 
